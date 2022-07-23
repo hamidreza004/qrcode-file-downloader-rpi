@@ -1,9 +1,15 @@
+from pySmartDL import SmartDL
+
 class DownloadManager:
 	def __init__(self): 
 		self.files = []
 		self.selected = 0
 
-	# TODO
+	def pause(self):
+		self.files[self.selected].pause()
+
+	def resume(self):
+		self.files[self.selected].unpause()
 
 	def delete(self):
 		if len(self.files) == 0:
@@ -29,11 +35,13 @@ class DownloadManager:
 	def move_up(self):
 		self.selected = max(0,self.selected - 1)
 	
-	def move_up(self):
+	def move_down(self):
 		self.selected = max(0, min(len(self.files) - 1, self.selected + 1))
 	
 	def add_link(self, link):
-		files.append(link)
+		f = SmartDL(link, "./Downloads")
+		f.start(blocking=False)
+		self.files.append(f)
 
 	def update_display(self):
 		# TODO
@@ -59,6 +67,7 @@ if __name__ == '__main__':
 	while True:
 		e = get_event()
 		if e == 0:
+			print("Bye!")
 			break
-	
-			
+		if e == 8:
+			download_manager.add_link(input())
