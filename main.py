@@ -1,4 +1,7 @@
 from pySmartDL import SmartDL
+import threading
+import time
+import os
 
 class DownloadManager:
 	def __init__(self): 
@@ -9,7 +12,7 @@ class DownloadManager:
 		self.files[self.selected].pause()
 
 	def resume(self):
-		self.files[self.selected].unpause()
+		self.files[self.selected].resume()
 
 	def delete(self):
 		if len(self.files) == 0:
@@ -39,17 +42,50 @@ class DownloadManager:
 		self.selected = max(0, min(len(self.files) - 1, self.selected + 1))
 	
 	def add_link(self, link):
-		f = SmartDL(link, "./Downloads")
+		f = SmartDL(link, "./Downloads", progress_bar=False)
 		f.start(blocking=False)
 		self.files.append(f)
 
-	def update_display(self):
-		# TODO
-		pass
+	def display(self):
+		os.system('clear') # ToDo Kiarash! 
+		print("""Help:  
+	1: Pause selected link
+	2: Resume selected link
+	3: Delete the selected link
+	4: Later download the link
+	5: Sooner download the link
+	6: Move up
+	7: Move down
+	8: Add new link
+	0: Turn off""")
+		s = 0
+		for f in self.files:
+			if s == self.selected:
+				print("[*]",end=" ")
+			else:
+				print("[ ]",end=" ")
+			print(f.dest,end=" ")
+			if f.isFinished():
+				if f.isSuccessful():
+					print("Complete")
+				else:
+					print("Failed")
+			else:
+				print(f.get_progress_bar(),end=" ")
+				print(f.get_dl_size(human=True),"/",f.get_final_filesize(human=True),end=" ")
+				if f.status == "paused":
+					print("||")
+				else:
+					print(">>",f.get_speed(human=True))
+			s += 1
 
+	def loop_display(self):
+		while True:
+			self.display()
+			time.sleep(2)
 	
 def get_event():
-	# TODO
+	# TODO Kiarash!
 	# 1: Pause selected link
 	# 2: Resume selected link
 	# 3: Delete the selected link
@@ -64,6 +100,8 @@ def get_event():
 
 if __name__ == '__main__':
 	download_manager = DownloadManager()
+	th = threading.Thread(target=download_manager.loop_display)
+	th.start()	
 	while True:
 		e = get_event()
 		if e == 0:
@@ -71,3 +109,20 @@ if __name__ == '__main__':
 			break
 		if e == 8:
 			download_manager.add_link(input())
+			# TODO Kiarash!
+		if e == 1:
+			download_manager.pause()
+		if e == 2:
+			download_manager.resume()
+		if e == 3:
+			download_manager.delete()
+		if e == 4:
+			download_manager.later()
+		if e == 5:
+			download_manager.sooner()
+		if e == 6:
+			download_manager.move_up()
+		if e == 7:
+			download_manager.move_down()
+	
+
